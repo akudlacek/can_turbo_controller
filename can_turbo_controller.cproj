@@ -20,10 +20,10 @@
     <OverrideVtor>false</OverrideVtor>
     <CacheFlash>true</CacheFlash>
     <ProgFlashFromRam>true</ProgFlashFromRam>
-    <RamSnippetAddress />
+    <RamSnippetAddress>0x20000000</RamSnippetAddress>
     <UncachedRange />
     <preserveEEPROM>true</preserveEEPROM>
-    <OverrideVtorValue />
+    <OverrideVtorValue>exception_table</OverrideVtorValue>
     <BootSegment>2</BootSegment>
     <ResetRule>0</ResetRule>
     <eraseonlaunchrule>0</eraseonlaunchrule>
@@ -420,6 +420,7 @@
       <Value>../src/ASF/common/services/serial</Value>
       <Value>../src</Value>
       <Value>../src/config</Value>
+      <Value>../src/driver</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.level>Optimize (-O1)</armgcc.compiler.optimization.level>
@@ -441,6 +442,7 @@
     </ListValues>
   </armgcc.linker.libraries.LibrarySearchPaths>
   <armgcc.linker.optimization.GarbageCollectUnusedSections>True</armgcc.linker.optimization.GarbageCollectUnusedSections>
+  <armgcc.linker.memorysettings.ExternalRAM />
   <armgcc.linker.miscellaneous.LinkerFlags>-Wl,--entry=Reset_Handler -Wl,--cref -mthumb -T../src/ASF/sam0/utils/linker_scripts/samc21/gcc/samc21j18a_flash.ld</armgcc.linker.miscellaneous.LinkerFlags>
   <armgcc.assembler.general.IncludePaths>
     <ListValues>
@@ -575,8 +577,123 @@
     <Folder Include="src\ASF\thirdparty\CMSIS\Lib\" />
     <Folder Include="src\ASF\thirdparty\CMSIS\Lib\GCC\" />
     <Folder Include="src\config\" />
+    <Folder Include="src\driver\" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="src\driver\drvr_adc.c">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_adc.h">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_can.c">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_can.h">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_clock.c">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_clock.h">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_divas.c">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_divas.h">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_dma.c">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_dma.h">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_eic.c">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_eic.h">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_evsys.c">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_evsys.h">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_nvic.c">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_nvic.h">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_nvmctrl.c">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_nvmctrl.h">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_pac.c">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_pac.h">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_port.c">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_port.h">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_rstc.c">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_rstc.h">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_sdadc.c">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_sdadc.h">
+      <SubType>compile</SubType>
+    </None>
+    <Compile Include="src\driver\drvr_sys.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\driver\drvr_sys.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <None Include="src\driver\drvr_tcc.c">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_tcc.h">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_tsens.c">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_tsens.h">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_usart.c">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_usart.h">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_wdt.c">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\drvr_wdt.h">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\interrupt_sam_nvic.c">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\driver\interrupt_sam_nvic.h">
+      <SubType>compile</SubType>
+    </None>
     <None Include="src\asf.h">
       <SubType>compile</SubType>
     </None>
