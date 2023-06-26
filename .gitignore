@@ -1,0 +1,7 @@
+/Debug/
+*.bak
+/doc/doxygen/html/
+
+#Release
+/Release/**/*.d
+/Release/**/*.o
