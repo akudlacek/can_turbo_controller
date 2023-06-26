@@ -37,15 +37,15 @@
 #include <string.h>
 #include <conf_can.h>
 
-//! [module_var]
 
-//! [module_inst]
+
+
 static struct usart_module cdc_instance;
 static struct can_module can_instance;
-//! [module_inst]
 
 
-//! [can_filter_setting]
+
+
 #define CAN_RX_STANDARD_FILTER_INDEX_0    0
 #define CAN_RX_STANDARD_FILTER_INDEX_1    1
 #define CAN_RX_STANDARD_FILTER_ID_0     0x45A
@@ -56,24 +56,24 @@ static struct can_module can_instance;
 #define CAN_RX_EXTENDED_FILTER_ID_0     0x18FFC600
 #define CAN_RX_EXTENDED_FILTER_ID_0_BUFFER_INDEX     1
 #define CAN_RX_EXTENDED_FILTER_ID_1     0x18FFC600
-//! [can_filter_setting]
+
 #define CAN_TX_BUFFER_INDEX    0
 
-//! [can_transfer_message_setting]
 
-//! [can_receive_message_setting]
+
+
 static volatile uint32_t standard_receive_index = 0;
 static volatile uint32_t extended_receive_index = 0;
 static struct can_rx_element_fifo_0 rx_element_fifo_0;
 static struct can_rx_element_fifo_1 rx_element_fifo_1;
 static struct can_rx_element_buffer rx_element_buffer;
-//! [can_receive_message_setting]
 
-//! [module_var]
 
-//! [setup]
 
-//! [cdc_setup]
+
+
+
+
 static void configure_usart_cdc(void)
 {
 
@@ -88,9 +88,9 @@ static void configure_usart_cdc(void)
 	stdio_serial_init(&cdc_instance, EDBG_CDC_MODULE, &config_cdc);
 	usart_enable(&cdc_instance);
 }
-//! [cdc_setup]
 
-//! [can_init_setup]
+
+
 static void configure_can(void)
 {
 
@@ -114,9 +114,9 @@ static void configure_can(void)
 	can_enable_interrupt(&can_instance, CAN_PROTOCOL_ERROR_ARBITRATION
 			| CAN_PROTOCOL_ERROR_DATA);
 }
-//! [can_init_setup]
 
-//! [can_receive_filter_setup]
+
+
 static void can_set_standard_filter_0(void)
 {
 	struct can_standard_message_filter_element sd_filter;
@@ -171,9 +171,9 @@ static void can_set_extended_filter_1(void)
 	can_enable_interrupt(&can_instance, CAN_RX_FIFO_1_NEW_MESSAGE);
 }
 
-//! [can_receive_filter_setup]
 
-//! [can_transfer_message_setup]
+
+
 static void can_send_standard_message(uint32_t id_value, uint8_t *data,
 		uint32_t data_length)
 {
@@ -213,9 +213,9 @@ static void can_send_extended_message(uint32_t id_value, uint8_t *data,
 	can_tx_transfer_request(&can_instance, 1 << CAN_TX_BUFFER_INDEX);
 }
 
-//! [can_transfer_message_setup]
 
-//! [can_interrupt_handler]
+
+
 void CAN0_Handler(void)
 {
 	volatile uint32_t status, i, rx_buffer_index;
@@ -284,9 +284,9 @@ void CAN0_Handler(void)
 		printf("Protocol error, please double check the clock in two boards. \r\n\r\n");
 	}
 }
-//! [can_interrupt_handler]
 
-//! [user_menu]
+
+
 static void display_menu(void)
 {
 	printf("Menu :\r\n"
@@ -301,37 +301,37 @@ static void display_menu(void)
 			"  7: Send extended message with ID: 0x10000096 and 8 byte data 128 to 135. \r\n"
 			"  h: Display menu \r\n\r\n");
 }
-//! [user_menu]
 
-//! [setup]
+
+
 
 int main(void)
 {
 	uint8_t key;
 
-//! [setup_init]
+
 	system_init();
 	configure_usart_cdc();
-//! [setup_init]
 
-//! [main_setup]
 
-//! [configure_can]
+
+
+
 	configure_can();
-//! [configure_can]
 
-//! [display_user_menu]
+
+
 	display_menu();
-//! [display_user_menu]
+
 
 uint16_t pos1 = 940;
 uint16_t pos2 = 200;
 
-//! [can_transfer_message_setting]
+
 uint8_t tx_message_0[] = {(uint8_t)pos1, (uint8_t)(pos1 >> 8), 1, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 uint8_t tx_message_1[] = {(uint8_t)pos2, (uint8_t)(pos2 >> 8), 1, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
-//! [main_loop]
+
 	while(1) {
 		scanf("%c", (char *)&key);
 
@@ -388,7 +388,7 @@ uint8_t tx_message_1[] = {(uint8_t)pos2, (uint8_t)(pos2 >> 8), 1, 0xFF, 0xFF, 0x
 			break;
 		}
 	}
-//! [main_loop]
 
-//! [main_setup]
+
+
 }
