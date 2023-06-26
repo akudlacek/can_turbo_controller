@@ -53,15 +53,12 @@ static struct can_module can_instance;
 #define CAN_RX_STANDARD_FILTER_ID_1     0x469
 #define CAN_RX_EXTENDED_FILTER_INDEX_0    0
 #define CAN_RX_EXTENDED_FILTER_INDEX_1    1
-#define CAN_RX_EXTENDED_FILTER_ID_0     0x100000A5
+#define CAN_RX_EXTENDED_FILTER_ID_0     0x18FFC600
 #define CAN_RX_EXTENDED_FILTER_ID_0_BUFFER_INDEX     1
-#define CAN_RX_EXTENDED_FILTER_ID_1     0x10000096
+#define CAN_RX_EXTENDED_FILTER_ID_1     0x18FFC600
 //! [can_filter_setting]
-
-//! [can_transfer_message_setting]
 #define CAN_TX_BUFFER_INDEX    0
-static uint8_t tx_message_0[CONF_CAN_ELEMENT_DATA_SIZE];
-static uint8_t tx_message_1[CONF_CAN_ELEMENT_DATA_SIZE];
+
 //! [can_transfer_message_setting]
 
 //! [can_receive_message_setting]
@@ -82,7 +79,7 @@ static void configure_usart_cdc(void)
 
 	struct usart_config config_cdc;
 	usart_get_config_defaults(&config_cdc);
-	config_cdc.baudrate	 = 38400;
+	config_cdc.baudrate	 = 115200;
 	config_cdc.mux_setting = EDBG_CDC_SERCOM_MUX_SETTING;
 	config_cdc.pinmux_pad0 = EDBG_CDC_SERCOM_PINMUX_PAD0;
 	config_cdc.pinmux_pad1 = EDBG_CDC_SERCOM_PINMUX_PAD1;
@@ -96,12 +93,6 @@ static void configure_usart_cdc(void)
 //! [can_init_setup]
 static void configure_can(void)
 {
-	uint32_t i;
-	/* Initialize the memory. */
-	for (i = 0; i < CONF_CAN_ELEMENT_DATA_SIZE; i++) {
-		tx_message_0[i] = i;
-		tx_message_1[i] = i + 0x80;
-	}
 
 	/* Set up the CAN TX/RX pins */
 	struct system_pinmux_config pin_config;
@@ -287,10 +278,9 @@ void CAN0_Handler(void)
 		printf("\r\n\r\n");
 	}
 
-	if ((status & CAN_PROTOCOL_ERROR_ARBITRATION)
-			|| (status & CAN_PROTOCOL_ERROR_DATA)) {
-		can_clear_interrupt_status(&can_instance, CAN_PROTOCOL_ERROR_ARBITRATION
-			 	| CAN_PROTOCOL_ERROR_DATA);
+	if ((status & CAN_PROTOCOL_ERROR_ARBITRATION) || (status & CAN_PROTOCOL_ERROR_DATA))
+	{
+		can_clear_interrupt_status(&can_instance, CAN_PROTOCOL_ERROR_ARBITRATION | CAN_PROTOCOL_ERROR_DATA);
 		printf("Protocol error, please double check the clock in two boards. \r\n\r\n");
 	}
 }
@@ -333,6 +323,13 @@ int main(void)
 //! [display_user_menu]
 	display_menu();
 //! [display_user_menu]
+
+uint16_t pos1 = 940;
+uint16_t pos2 = 200;
+
+//! [can_transfer_message_setting]
+uint8_t tx_message_0[] = {(uint8_t)pos1, (uint8_t)(pos1 >> 8), 1, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+uint8_t tx_message_1[] = {(uint8_t)pos2, (uint8_t)(pos2 >> 8), 1, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 //! [main_loop]
 	while(1) {

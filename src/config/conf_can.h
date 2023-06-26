@@ -70,7 +70,7 @@
  * quanta which means the bit rate is 8MHz/16=500KHz.
  */
 /* Nominal bit Baud Rate Prescaler */
-#define CONF_CAN_NBTP_NBRP_VALUE    5
+#define CONF_CAN_NBTP_NBRP_VALUE    11 //This is set for 250kHz now
 /* Nominal bit (Re)Synchronization Jump Width */
 #define CONF_CAN_NBTP_NSJW_VALUE    3
 /* Nominal bit Time segment before sample point */
