@@ -14,6 +14,7 @@
 
 //#include "cli.h"
 #include "drvr_clock.h"
+#include "conf_clocks.h"
 
 
 /**************************************************************************************************
@@ -47,7 +48,7 @@ inline void drvr_sys_init(void)
 {
 	//todo: this is hacked in if you change the clock freq this will break
 	//SysTick_Config(*g_cpu_freq_hz_ptr / DRVR_SYS_SYSTICK_HZ);     //SysTick timer
-	SysTick_Config(48000000 / DRVR_SYS_SYSTICK_HZ);     //SysTick timer
+	SysTick_Config(CONF_CLOCK_DPLL_OUTPUT_FREQUENCY / DRVR_SYS_SYSTICK_HZ);     //SysTick timer
 }
 
 /**************************************************************************************************

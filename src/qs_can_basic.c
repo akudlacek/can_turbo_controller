@@ -38,6 +38,7 @@
 #include <conf_can.h>
 
 #include "drvr_sys.h"
+#include "cli.h"
 
 static struct usart_module cdc_instance;
 static struct can_module can_instance;
@@ -61,10 +62,24 @@ static struct can_rx_element_fifo_0 rx_element_fifo_0;
 static struct can_rx_element_fifo_1 rx_element_fifo_1;
 static struct can_rx_element_buffer rx_element_buffer;
 
+uint16_t pos0 = 500;
+
+static void cmd_line_init(void);
+static void tx_strn(const char * const str);
+static void set_pos(uint32_t pos);
+
+static const cli_command_t cli_cmd_list[] =
+{
+	CLI_HELP_CMD_LIST_ENTRY,
+
+	//All memory commands
+	{"set", CLI_ULINT_FPTR(set_pos), HELP("put stuff here")},
+
+	CLI_CMD_LIST_END // must be LAST
+};
 
 static void configure_usart_cdc(void)
 {
-
 	struct usart_config config_cdc;
 	usart_get_config_defaults(&config_cdc);
 	config_cdc.baudrate	 = 115200;
@@ -76,8 +91,6 @@ static void configure_usart_cdc(void)
 	stdio_serial_init(&cdc_instance, EDBG_CDC_MODULE, &config_cdc);
 	usart_enable(&cdc_instance);
 }
-
-
 
 static void configure_can(void)
 {
@@ -135,12 +148,10 @@ static void can_set_extended_filter_0(void)
 
 	can_get_extended_message_filter_element_default(&et_filter);
 	et_filter.F0.bit.EFID1 = CAN_RX_EXTENDED_FILTER_ID_0;
-	et_filter.F0.bit.EFEC =
-			CAN_EXTENDED_MESSAGE_FILTER_ELEMENT_F0_EFEC_STRXBUF_Val;
+	et_filter.F0.bit.EFEC =	CAN_EXTENDED_MESSAGE_FILTER_ELEMENT_F0_EFEC_STRXBUF_Val;
 	et_filter.F1.bit.EFID2 = CAN_RX_EXTENDED_FILTER_ID_0_BUFFER_INDEX;
 
-	can_set_rx_extended_filter(&can_instance, &et_filter,
-			CAN_RX_EXTENDED_FILTER_INDEX_0);
+	can_set_rx_extended_filter(&can_instance, &et_filter, CAN_RX_EXTENDED_FILTER_INDEX_0);
 	can_enable_interrupt(&can_instance, CAN_RX_BUFFER_NEW_MESSAGE);
 }
 
@@ -151,13 +162,11 @@ static void can_set_extended_filter_1(void)
 	can_get_extended_message_filter_element_default(&et_filter);
 	et_filter.F0.bit.EFID1 = CAN_RX_EXTENDED_FILTER_ID_1;
 
-	can_set_rx_extended_filter(&can_instance, &et_filter,
-			CAN_RX_EXTENDED_FILTER_INDEX_1);
+	can_set_rx_extended_filter(&can_instance, &et_filter, CAN_RX_EXTENDED_FILTER_INDEX_1);
 	can_enable_interrupt(&can_instance, CAN_RX_FIFO_1_NEW_MESSAGE);
 }
 
-static void can_send_standard_message(uint32_t id_value, uint8_t *data,
-		uint32_t data_length)
+static void can_send_standard_message(uint32_t id_value, uint8_t *data, uint32_t data_length)
 {
 	uint32_t i;
 	struct can_tx_element tx_element;
@@ -165,7 +174,8 @@ static void can_send_standard_message(uint32_t id_value, uint8_t *data,
 	can_get_tx_buffer_element_defaults(&tx_element);
 	tx_element.T0.reg |= CAN_TX_ELEMENT_T0_STANDARD_ID(id_value);
 	tx_element.T1.bit.DLC = data_length;
-	for (i = 0; i < data_length; i++) {
+	for (i = 0; i < data_length; i++)
+	{
 		tx_element.data[i] = *data;
 		data++;
 	}
@@ -238,7 +248,8 @@ void CAN0_Handler(void)
 		}
 
 		printf("\n\r Standard message received in FIFO 0. The received data is: \r\n");
-		for (i = 0; i < rx_element_fifo_0.R1.bit.DLC; i++) {
+		for (i = 0; i < rx_element_fifo_0.R1.bit.DLC; i++)
+		{
 			printf("  %d",rx_element_fifo_0.data[i]);
 		}
 		printf("\r\n\r\n");
@@ -266,103 +277,39 @@ void CAN0_Handler(void)
 	if ((status & CAN_PROTOCOL_ERROR_ARBITRATION) || (status & CAN_PROTOCOL_ERROR_DATA))
 	{
 		can_clear_interrupt_status(&can_instance, CAN_PROTOCOL_ERROR_ARBITRATION | CAN_PROTOCOL_ERROR_DATA);
-		printf("Protocol error, please double check the clock in two boards. \r\n\r\n");
+		//printf("Protocol error, please double check the clock in two boards. \r\n\r\n");
 	}
-}
-
-static void display_menu(void)
-{
-	printf("Menu :\r\n"
-			"  -- Select the action:\r\n"
-			"  0: Set standard filter ID 0: 0x45A, store into Rx buffer. \r\n"
-			"  1: Set standard filter ID 1: 0x469, store into Rx FIFO 0. \r\n"
-			"  2: Send standard message with ID: 0x45A and 4 byte data 0 to 3. \r\n"
-			"  3: Send standard message with ID: 0x469 and 4 byte data 128 to 131. \r\n"
-			"  4: Set extended filter ID 0: 0x100000A5, store into Rx buffer. \r\n"
-			"  5: Set extended filter ID 1: 0x10000096, store into Rx FIFO 1. \r\n"
-			"  6: Send extended message with ID: 0x100000A5 and 8 byte data 0 to 7. \r\n"
-			"  7: Send extended message with ID: 0x10000096 and 8 byte data 128 to 135. \r\n"
-			"  h: Display menu \r\n\r\n");
 }
 
 
 int main(void)
 {
-	uint8_t key;
-
 	system_init();
 	configure_usart_cdc();
-
 	configure_can();
 
-	display_menu();
+	uint8_t tx_message_0[] = {(uint8_t)pos0, (uint8_t)(pos0 >> 8), 1, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
+	uint32_t last_time_ms;
+	uint32_t last_time_ms1;
 
-uint16_t pos0 = 500;
-uint16_t pos1 = 940;
-
-
-uint8_t tx_message_0[] = {(uint8_t)pos0, (uint8_t)(pos0 >> 8), 1, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-uint8_t tx_message_1[] = {(uint8_t)pos1, (uint8_t)(pos1 >> 8), 1, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-
-uint32_t last_time_ms;
-uint32_t last_time_ms1;
+	drvr_sys_init();
+	
+	cmd_line_init();
 
 	while(1)
 	{
-		//scanf("%c", (char *)&key);
-
-		switch (key)
-		{
-			case 'h':
-			display_menu();
-			break;
-
-			case '0':
-			pos0 = 0;
-			break;
-
-			case '1':
-			pos0 = 100;
-			break;
-
-			case '2':
-			pos0 = 200;
-			break;
-
-			case '3':
-			pos0 = 300;
-			break;
-
-			case '4':
-			pos0 = 400;
-			break;
-
-			case '5':
-			pos0 = 500;
-			break;
-
-			case '6':
-			pos0 = 600;
-			break;
-
-			case '7':
-			pos0 = 700;
-			break;
-
-			default:
-			break;
-		}
+		cli_task();
 		
-		//if(*g_sys_tick_ptr - last_time_ms >= 10)
-		//{
-			////do stuff every 10mS
-			//tx_message_0[0] = (uint8_t)pos0;
-			//tx_message_0[1] = (uint8_t)(pos0 >> 8);
-			//can_send_extended_message(CAN_RX_EXTENDED_FILTER_ID_0, tx_message_0, CONF_CAN_ELEMENT_DATA_SIZE);
-			//
-			//last_time_ms = *g_sys_tick_ptr;
-		//}
+		if(*g_sys_tick_ptr - last_time_ms >= 10)
+		{
+			//do stuff every 10mS
+			tx_message_0[0] = (uint8_t)pos0;
+			tx_message_0[1] = (uint8_t)(pos0 >> 8);
+			can_send_extended_message(CAN_RX_EXTENDED_FILTER_ID_0, tx_message_0, CONF_CAN_ELEMENT_DATA_SIZE);
+			
+			last_time_ms = *g_sys_tick_ptr;
+		}
 		
 		if(*g_sys_tick_ptr - last_time_ms1 >= 1000)
 		{
@@ -373,4 +320,46 @@ uint32_t last_time_ms1;
 			last_time_ms1 = *g_sys_tick_ptr;
 		}
 	}
+}
+
+
+/******************************************************************************
+*  \brief Init all commands to be used in CLI
+*
+*  \note
+******************************************************************************/
+static void cmd_line_init(void)
+{
+	cli_conf_t cli_conf;
+
+	/*Initialize the CLI driver*/
+	cli_get_config_defaults(&cli_conf);
+
+	cli_conf.rx_byte_fptr   = getchar;
+	cli_conf.tx_string_fprt = tx_strn;
+	cli_conf.enable         = CLI_ENABLED;
+	cli_conf.echo_enable    = CLI_ECHO_ENABLED;
+	cli_conf.cmd_list       = cli_cmd_list;
+
+	cli_init(cli_conf);
+}
+
+/******************************************************************************
+*  \brief 
+*
+*  \note
+******************************************************************************/
+static void tx_strn(const char * const str)
+{
+	printf("%s", str);
+}
+
+/******************************************************************************
+*  \brief
+*
+*  \note
+******************************************************************************/
+static void set_pos(uint32_t pos)
+{
+	pos0 = pos;
 }
