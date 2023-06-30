@@ -39,6 +39,7 @@
 
 #include "drvr_sys.h"
 #include "cli.h"
+#include "timer.h"
 
 /**************************************************************************************************
 *                                             DEFINES
@@ -65,13 +66,14 @@ static void cmd_line_init(void);
 static int16_t rx_byte(void);
 static void tx_strn(const char * const str);
 static void set_pos(unsigned long pos);
-
+static void configure_adc(void);
 
 /**************************************************************************************************
 *                                            VARIABLES
 *************************************************^************************************************/
 static struct usart_module cdc_instance;
 static struct can_module can_instance;
+static struct adc_module adc_instance;
 
 static volatile uint32_t extended_receive_index = 0;
 static struct can_rx_element_fifo_1 rx_element_fifo_1;
@@ -108,34 +110,40 @@ int main(void)
 	
 	uint8_t tx_message_0[] = {(uint8_t)pos0, (uint8_t)(pos0 >> 8), 1, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
-	uint32_t last_time_ms = 0;
-	uint32_t last_time_ms1 = 0;
+	TICK_TYPE last_time_ms = 0;
+	TICK_TYPE last_time_ms1 = 0;
 
 	drvr_sys_init();
 	
 	cmd_line_init();
+	
+	
+	//todo: just pasting ADC code here will need to move this and use for analog input form pot
+	//configure_adc();
+	//
+	//adc_start_conversion(&adc_instance);
+	//uint16_t result;
+	//do {
+		///* Wait for conversion to be done and read out result */
+	//} while (adc_read(&adc_instance, &result) == STATUS_BUSY);
 
 	while(1)
 	{
 		cli_task();
 		
-		if(*g_sys_tick_ptr - last_time_ms >= 10)
+		if(tmrCheckReset(&last_time_ms, 10))
 		{
 			//do stuff every 10mS
 			tx_message_0[0] = (uint8_t)pos0;
 			tx_message_0[1] = (uint8_t)(pos0 >> 8);
 			can_send_extended_message(CAN_RX_EXTENDED_FILTER_ID_0, tx_message_0, CONF_CAN_ELEMENT_DATA_SIZE);
-			
-			last_time_ms = *g_sys_tick_ptr;
 		}
 		
-		if(*g_sys_tick_ptr - last_time_ms1 >= 1000)
+		if(tmrCheckReset(&last_time_ms1, 1000))
 		{
 			//do stuff every 1000mS
 			
-			printf("time tick %lu\r\n", (unsigned long)*g_sys_tick_ptr);
-			
-			last_time_ms1 = *g_sys_tick_ptr;
+			printf("time tick %lu\r\n", (unsigned long)last_time_ms1);
 		}
 	}
 }
@@ -310,6 +318,22 @@ static void tx_strn(const char * const str)
 static void set_pos(unsigned long pos)
 {
 	pos0 = (uint16_t)pos;
+}
+
+/******************************************************************************
+*  \brief
+*
+*  \note
+******************************************************************************/
+static void configure_adc(void)
+{
+	struct adc_config config_adc;
+	adc_get_config_defaults(&config_adc);
+	
+	//todo: properly configure ADC pin this is from polled ADC example
+
+	adc_init(&adc_instance, ADC1, &config_adc);
+	adc_enable(&adc_instance);
 }
 
 

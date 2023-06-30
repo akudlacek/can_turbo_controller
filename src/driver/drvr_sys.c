@@ -30,10 +30,10 @@
 /**************************************************************************************************
 *                                            VARIABLES
 *************************************************^************************************************/
-static volatile uint32_t sys_tick = 0;
+static volatile TICK_TYPE sys_tick = 0;
 
 /*****GLOBAL******/
-const volatile uint32_t * const g_sys_tick_ptr = &sys_tick;
+const volatile TICK_TYPE * volatile const g_tick_ms_ptr = &sys_tick;
 
 
 /**************************************************************************************************

@@ -1,3 +1,6 @@
 [submodule "src/cli"]
 	path = src/cli
 	url = https://github.com/akudlacek/cli.git
+[submodule "src/timer"]
+	path = src/timer
+	url = https://github.com/akudlacek/timer.git
