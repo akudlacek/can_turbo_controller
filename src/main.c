@@ -49,9 +49,9 @@
 #define CAN_RX_EXTENDED_FILTER_ID_0     0x18FFC600
 #define CAN_RX_EXTENDED_FILTER_ID_0_BUFFER_INDEX     1
 #define CAN_RX_EXTENDED_FILTER_ID_1     0x18FFC600
-
 #define CAN_TX_BUFFER_INDEX    0
 
+#define CONSTRAIN(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt))) //keeps within high and low range
 
 /**************************************************************************************************
 *                                         LOCAL PROTOTYPES
@@ -67,6 +67,7 @@ static int16_t rx_byte(void);
 static void tx_strn(const char * const str);
 static void set_pos(unsigned long pos);
 static void configure_adc(void);
+static uint16_t pot_wip_read(void);
 
 /**************************************************************************************************
 *                                            VARIABLES
@@ -79,7 +80,18 @@ static volatile uint32_t extended_receive_index = 0;
 static struct can_rx_element_fifo_1 rx_element_fifo_1;
 static struct can_rx_element_buffer rx_element_buffer;
 
-uint16_t pos0 = 500;
+static uint16_t pos0 = 0;
+static uint16_t pot_wip_result = 0;
+
+//Data Byte 0: Vane position low order bits
+//Data Byte 1: Vane position high order bits
+//Data Byte 2: Mode
+//Data Byte 3: 0xFF
+//Data Byte 4: 0xFF
+//Data Byte 5: 0xFF
+//Data Byte 6: 0xFF
+//Data Byte 7: 0xFF
+static uint8_t tx_message_0[] = {0, 0, 1, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 /****CLI Command List****/
 static const cli_command_t cli_cmd_list[] =
@@ -103,47 +115,44 @@ static const cli_command_t cli_cmd_list[] =
 ******************************************************************************/
 int main(void)
 {
+	uint8_t can_sample_ready = 0; //this is here so there is no glitch on startup, only used once
+	TICK_TYPE last_time_ms = 0;
+	TICK_TYPE last_time_ms1 = 0;
+	
 	system_init();
 	configure_usart_cdc();
 	configure_can();
 	can_set_extended_filter_0(); //todo: needed?
-	
-	uint8_t tx_message_0[] = {(uint8_t)pos0, (uint8_t)(pos0 >> 8), 1, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-
-	TICK_TYPE last_time_ms = 0;
-	TICK_TYPE last_time_ms1 = 0;
 
 	drvr_sys_init();
+	configure_adc();
+	//cmd_line_init();
 	
-	cmd_line_init();
-	
-	
-	//todo: just pasting ADC code here will need to move this and use for analog input form pot
-	//configure_adc();
-	//
-	//adc_start_conversion(&adc_instance);
-	//uint16_t result;
-	//do {
-		///* Wait for conversion to be done and read out result */
-	//} while (adc_read(&adc_instance, &result) == STATUS_BUSY);
-
 	while(1)
 	{
-		cli_task();
+		//cli_task();
 		
-		if(tmrCheckReset(&last_time_ms, 10))
+		//do stuff every 200mS
+		if(tmrCheckReset(&last_time_ms1, 200))
 		{
-			//do stuff every 10mS
+			pot_wip_result = pot_wip_read(); //get pot ADC value 0 - 1023
+			pos0 = CONSTRAIN(pot_wip_result, 0, 1000); //convert to 0 - 1000 value for vane position
+			
+			//update can message
 			tx_message_0[0] = (uint8_t)pos0;
 			tx_message_0[1] = (uint8_t)(pos0 >> 8);
-			can_send_extended_message(CAN_RX_EXTENDED_FILTER_ID_0, tx_message_0, CONF_CAN_ELEMENT_DATA_SIZE);
+			
+			//send over serial port in binary for serialplot program
+			fwrite(&pot_wip_result, 1, sizeof(pot_wip_result), stdout);
+			fwrite(&pos0, 1, sizeof(pos0), stdout);
+			
+			can_sample_ready = 1;
 		}
 		
-		if(tmrCheckReset(&last_time_ms1, 1000))
+		//do stuff every 10mS
+		if(tmrCheckReset(&last_time_ms, 10) && (can_sample_ready == 1))
 		{
-			//do stuff every 1000mS
-			
-			printf("time tick %lu\r\n", (unsigned long)last_time_ms1);
+			can_send_extended_message(CAN_RX_EXTENDED_FILTER_ID_0, tx_message_0, CONF_CAN_ELEMENT_DATA_SIZE);
 		}
 	}
 }
@@ -176,8 +185,10 @@ static void configure_can(void)
 {
 	struct system_pinmux_config pin_config;
 	struct can_config config_can;
+	struct port_config pin_conf;
 	
 	system_pinmux_get_config_defaults(&pin_config);
+	port_get_config_defaults(&pin_conf);
 	
 	//init TX pin
 	pin_config.mux_position = CAN_TX_MUX_SETTING;
@@ -186,6 +197,12 @@ static void configure_can(void)
 	//init RX pin
 	pin_config.mux_position = CAN_RX_MUX_SETTING;
 	system_pinmux_pin_set_config(CAN_RX_PIN, &pin_config);
+	
+	//init CAN enable pin
+	//configure enabled
+	pin_conf.direction  = PORT_PIN_DIR_OUTPUT;
+	port_pin_set_config(CAN_INHIB, &pin_conf);
+	port_pin_set_output_level(CAN_INHIB, LOW);
 	
 	//init can module
 	can_get_config_defaults(&config_can);
@@ -328,12 +345,39 @@ static void set_pos(unsigned long pos)
 static void configure_adc(void)
 {
 	struct adc_config config_adc;
-	adc_get_config_defaults(&config_adc);
+	struct system_pinmux_config pin_config;
 	
-	//todo: properly configure ADC pin this is from polled ADC example
-
+	adc_get_config_defaults(&config_adc);
+	system_pinmux_get_config_defaults(&pin_config);
+	
+	//init pot wip pin for ADC
+	pin_config.mux_position = MUX_PB05B_ADC1_AIN7;
+	system_pinmux_pin_set_config(POT_WIP_SENSE, &pin_config);
+	
+	config_adc.resolution     = ADC_RESOLUTION_10BIT;
+	config_adc.positive_input = ADC_INPUTCTRL_MUXPOS_AIN7;
+	config_adc.reference      = ADC_REFERENCE_INTVCC2;
+	
 	adc_init(&adc_instance, ADC1, &config_adc);
 	adc_enable(&adc_instance);
+}
+
+/******************************************************************************
+*  \brief returns potentiometer pin ADC value 10bit (0 - 1023) = (0v - 5v)
+*
+*  \note
+******************************************************************************/
+static uint16_t pot_wip_read(void)
+{
+	uint16_t result;
+	
+	adc_start_conversion(&adc_instance);
+	
+	do {
+		/* Wait for conversion to be done and read out result */
+	} while (adc_read(&adc_instance, &result) == STATUS_BUSY);
+	
+	return result;
 }
 
 

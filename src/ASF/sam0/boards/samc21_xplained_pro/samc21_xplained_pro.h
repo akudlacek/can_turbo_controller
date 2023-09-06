@@ -73,9 +73,9 @@ void system_board_init(void);
 
 /** \name LED0 definitions
  *  @{ */
-#define LED0_PIN                  PIN_PA15
-#define LED0_ACTIVE               false
-#define LED0_INACTIVE             !LED0_ACTIVE
+//#define LED0_PIN                  PIN_PA15
+//#define LED0_ACTIVE               false
+//#define LED0_INACTIVE             !LED0_ACTIVE
 /** @} */
 
 /** \name SW0 definitions
@@ -96,23 +96,23 @@ void system_board_init(void);
  * boards.
  *
  *  @{ */
-#define LED_0_NAME                "LED0 (yellow)"
-#define LED_0_PIN                 LED0_PIN
-#define LED_0_ACTIVE              LED0_ACTIVE
-#define LED_0_INACTIVE            LED0_INACTIVE
-#define LED0_GPIO                 LED0_PIN
-#define LED0                      LED0_PIN
+//#define LED_0_NAME                "LED0 (yellow)"
+//#define LED_0_PIN                 LED0_PIN
+//#define LED_0_ACTIVE              LED0_ACTIVE
+//#define LED_0_INACTIVE            LED0_INACTIVE
+//#define LED0_GPIO                 LED0_PIN
+//#define LED0                      LED0_PIN
 
-#define LED_0_PWM4CTRL_MODULE     TCC0
-#define LED_0_PWM4CTRL_CHANNEL    1
-#define LED_0_PWM4CTRL_OUTPUT     1
-#define LED_0_PWM4CTRL_PIN        PIN_PA15F_TCC0_WO5
-#define LED_0_PWM4CTRL_MUX        MUX_PA15F_TCC0_WO5
-#define LED_0_PWM4CTRL_PINMUX     PINMUX_PA15F_TCC0_WO5
+//#define LED_0_PWM4CTRL_MODULE     TCC0
+//#define LED_0_PWM4CTRL_CHANNEL    1
+//#define LED_0_PWM4CTRL_OUTPUT     1
+//#define LED_0_PWM4CTRL_PIN        PIN_PA15F_TCC0_WO5
+//#define LED_0_PWM4CTRL_MUX        MUX_PA15F_TCC0_WO5
+//#define LED_0_PWM4CTRL_PINMUX     PINMUX_PA15F_TCC0_WO5
 /** @} */
 
 /** Number of on-board LEDs */
-#define LED_COUNT                 1
+//#define LED_COUNT                 1
 
 
 /**
@@ -122,18 +122,18 @@ void system_board_init(void);
  * boards.
  *
  *  @{ */
-#define BUTTON_0_NAME             "SW0"
-#define BUTTON_0_PIN              SW0_PIN
-#define BUTTON_0_ACTIVE           SW0_ACTIVE
-#define BUTTON_0_INACTIVE         SW0_INACTIVE
-#define BUTTON_0_EIC_PIN          SW0_EIC_PIN
-#define BUTTON_0_EIC_MUX          SW0_EIC_MUX
-#define BUTTON_0_EIC_PINMUX       SW0_EIC_PINMUX
-#define BUTTON_0_EIC_LINE         SW0_EIC_LINE
+//#define BUTTON_0_NAME             "SW0"
+//#define BUTTON_0_PIN              SW0_PIN
+//#define BUTTON_0_ACTIVE           SW0_ACTIVE
+//#define BUTTON_0_INACTIVE         SW0_INACTIVE
+//#define BUTTON_0_EIC_PIN          SW0_EIC_PIN
+//#define BUTTON_0_EIC_MUX          SW0_EIC_MUX
+//#define BUTTON_0_EIC_PINMUX       SW0_EIC_PINMUX
+//#define BUTTON_0_EIC_LINE         SW0_EIC_LINE
 /** @} */
 
 /** Number of on-board buttons */
-#define BUTTON_COUNT 1
+//#define BUTTON_COUNT 1
 
 /** \name Extension header #1 pin definitions
  *  @{
@@ -524,6 +524,83 @@ void system_board_init(void);
 #define CAN_RX_PIN              PIN_PA25G_CAN0_RX
 #define CAN_RX_MUX_SETTING      MUX_PA25G_CAN0_RX
 /** @} */
+
+/******************************************************************************
+* PIN/PORT Definitions for ERP REV2 board
+******************************************************************************/
+/*Port Group 0 (PA)*/
+#define UC_XIN32            PIN_PA00
+#define UC_XOUT32           PIN_PA01
+#define UNUSED_PA02         PIN_PA02
+#define UNUSED_PA03         PIN_PA03
+#define UNUSED_PA04         PIN_PA04
+#define UNUSED_PA05         PIN_PA05
+#define HSS_PWM             PIN_PA06
+#define OPEN_LOAD_SENSE     PIN_PA07
+#define LED_1               PIN_PA08
+#define LED_2               PIN_PA09
+#define UNUSED_PA10         PIN_PA10
+#define UNUSED_PA11         PIN_PA11
+#define ATZB_SLP_TR         PIN_PA12
+#define ATZB_FEM_CPS        PIN_PA13
+#define ATZB_IRQ            PIN_PA14
+#define ATZB_RESET          PIN_PA15
+#define UC_SPI_MISO         PIN_PA16
+#define UC_SPI_SS           PIN_PA17
+#define UC_SPI_MOSI         PIN_PA18
+#define UC_SPI_SCK          PIN_PA19
+#define UNUSED_PA20         PIN_PA20
+#define UNUSED_PA21         PIN_PA21
+#define UNUSED_PA22         PIN_PA22
+#define CAN_INHIB           PIN_PA23
+#define UC_CAN_TX           PIN_PA24
+#define UC_CAN_RX           PIN_PA25
+//PIN_PA26 not on this processor
+#define UNUSED_PA27         PIN_PA27
+#define UNUSED_PA28         PIN_PA28
+//PIN_PA29 not on this processor
+#define UC_SWCLK            PIN_PA30
+#define UC_SWDIO            PIN_PA31
+
+/*Port Group 1 (PB)*/
+#define ENC_PULSE           PIN_PB00
+#define ENC_DIR             PIN_PB01
+#define ENC_INDEX           PIN_PB02
+#define PB03                PIN_PB03
+#define VIN_SENSE           PIN_PB04
+#define POT_WIP_SENSE       PIN_PB05
+#define POT_GND_SENSE       PIN_PB06
+#define UNUSED_PB07         PIN_PB07
+#define UNUSED_PB08         PIN_PB08
+#define CURRENT_SENSE_POS   PIN_PB09
+#define UC_UART_TX          PIN_PB10
+#define UC_UART_RX          PIN_PB11
+
+#define UNUSED_PB12         PIN_PB12
+#define UNUSED_PB13         PIN_PB13
+#define ATZB_RX_TX_IND      PIN_PB14
+#define ATZB_TX_RX_TM_STMP  PIN_PB15
+#define UNUSED_PB16         PIN_PB16
+#define UNUSED_PB17         PIN_PB17
+//PIN_PB18 not on this processor
+//PIN_PB19 not on this processor
+//PIN_PB20 not on this processor
+//PIN_PB21 not on this processor
+#define UNUSED_PB22         PIN_PB22
+#define UC_ENABLE           PIN_PB23
+//PIN_PB24 not on this processor
+//PIN_PB25 not on this processor
+//PIN_PB26 not on this processor
+//PIN_PB27 not on this processor
+//PIN_PB28 not on this processor
+//PIN_PB29 not on this processor
+#define UNUSED_PB30         PIN_PB30
+#define UNUSED_PB31         PIN_PB31
+
+#define CURRENT_SENSE_ADC_MUX 3
+#define VIN_SENSE_ADC_MUX     6
+#define POT_WIP_SENSE_ADC_MUX 7
+#define POT_GND_SENSE_ADC_MUX 8
 
 
 /**
